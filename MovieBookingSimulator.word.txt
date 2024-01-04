@@ -1,0 +1,162 @@
+package moviepackage;
+import java.util.*;
+
+class Theater {
+    private String username;
+    private String password;
+    private Map<String, ShowTime> showTimes;
+
+    public Theater(String username, String password) {
+        this.username = username;
+        this.password = password;
+        this.showTimes = new HashMap<>();
+    }
+
+    public boolean login(String enteredUsername, String enteredPassword) {
+        return username.equals(enteredUsername) && password.equals(enteredPassword);
+    }
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+        System.out.println("Password updated successfully.");
+    }
+
+    public void addShowTime(String date, String time, int totalSeats) {
+        ShowTime showTime = new ShowTime(date, time, totalSeats);
+        showTimes.put(showTime.getShowKey(), showTime);
+    }
+
+    public void viewSeatingArrangement(String date, String time) {
+        String showKey = ShowTime.generateShowKey(date, time);
+        ShowTime showTime = showTimes.get(showKey);
+        if (showTime != null) {
+            showTime.displaySeatingArrangement();
+        } else {
+            System.out.println("Invalid show date or time.");
+        }
+    }
+
+    public void bookTicket(String date, String time, String seatSelection) {
+        String showKey = ShowTime.generateShowKey(date, time);
+        ShowTime showTime = showTimes.get(showKey);
+        if (showTime != null) {
+            showTime.bookSeat(seatSelection);
+        } else {
+            System.out.println("Invalid show date or time.");
+        }
+    }
+
+    public void viewBookingStatus() {
+        System.out.println("Booking Status:");
+        for (ShowTime showTime : showTimes.values()) {
+            showTime.displayBookingStatus();
+        }
+    }
+}
+
+class ShowTime {
+    private String date;
+    private String time;
+    private int totalSeats;
+    private Set<String> bookedSeats;
+
+    public ShowTime(String date, String time, int totalSeats) {
+        this.date = date;
+        this.time = time;
+        this.totalSeats = totalSeats;
+        this.bookedSeats = new HashSet<>();
+    }
+
+    public String getShowKey() {
+        return date + "_" + time;
+    }
+
+    public void displaySeatingArrangement() {
+        System.out.println("Seating Arrangement for " + date + " " + time + ":");
+        for (int i = 1; i <= totalSeats; i++) {
+            String status = bookedSeats.contains(String.valueOf(i)) ? "Booked" : "Available";
+            System.out.println("Seat " + i + ": " + status);
+        }
+    }
+
+    public void bookSeat(String seatSelection) {
+        bookedSeats.add(seatSelection);
+        System.out.println("Seat " + seatSelection + " booked successfully.");
+    }
+
+    public void displayBookingStatus() {
+        System.out.println("Show " + date + " " + time + " - Booked Seats: " + bookedSeats.size() +
+                ", Available Seats: " + (totalSeats - bookedSeats.size()));
+    }
+
+    public static String generateShowKey(String date, String time) {
+        return date + "_" + time;
+    }
+}
+
+public class MovieBookingSimulator {
+    public static void main(String[] args) {
+        // Initialization
+        Theater theater = new Theater("admin", "password");
+
+        theater.addShowTime("2024-01-10", "15:00", 20);
+        theater.addShowTime("2024-01-10", "18:00", 15);
+
+        // Front Desk Login
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter username: ");
+        String enteredUsername = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String enteredPassword = scanner.nextLine();
+
+        if (theater.login(enteredUsername, enteredPassword)) {
+            System.out.println("Login successful!");
+
+            // Front Desk Options
+            int choice;
+            do {
+                System.out.println("\nFront Desk Options:");
+                System.out.println("1. Update Password");
+                System.out.println("2. View Seating Arrangement");
+                System.out.println("3. Book Ticket");
+                System.out.println("4. View Booking Status");
+                System.out.println("5. Exit");
+                System.out.print("Enter your choice: ");
+                choice = scanner.nextInt();
+
+                switch (choice) {
+                case 1:
+                    System.out.print("Enter new password: ");
+                    String newPassword = scanner.next();
+                    theater.updatePassword(newPassword);
+                    break;
+                    case 2:
+                        System.out.print("Enter show date (YYYY-MM-DD): ");
+                        String dateInput = scanner.next();
+                        System.out.print("Enter show time: ");
+                        String timeInput = scanner.next();
+                        theater.viewSeatingArrangement(dateInput, timeInput);
+                        break;
+                    case 3:
+                        System.out.print("Enter show date (YYYY-MM-DD): ");
+                        String bookDateInput = scanner.next();
+                        System.out.print("Enter show time: ");
+                        String bookTimeInput = scanner.next();
+                        System.out.print("Enter seat selection: ");
+                        String seatSelection = scanner.next();
+                        theater.bookTicket(bookDateInput, bookTimeInput, seatSelection);
+                        break;
+                    case 4:
+                        theater.viewBookingStatus();
+                        break;
+                    case 5:
+                        System.out.println("Exiting Front Desk. Goodbye!");
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } while (choice != 5);
+        } else {
+            System.out.println("Login failed. Exiting.");
+        }
+    }
+}
